@@ -1,6 +1,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -20,8 +21,8 @@
 // TODO: implement send() and recv() properly
 
 int main() {
-	struct sockaddr_storage client_addr;
-	socklen_t addr_size;
+	struct sockaddr_storage clientaddr;
+	socklen_t addrsize;
 	struct addrinfo hints, *res;
 	int sockfd, newfd;
 	int status;
@@ -60,10 +61,29 @@ int main() {
 		fprintf(stderr, "listen() failed, errno %d\n", errsv);
 		exit(1);
 	}
+	
+	fprintf(stderr, "Server up and running\n"); // maybe add gethostname() here
 
-	addr_size = sizeof(client_addr);
+	addrsize = sizeof(clientaddr);
 	while (1) { // swap this out for a proper connection pool manager (and preferrably something multithreaded)
-		newfd = accept(sockfd, (struct sockaddr*)&client_addr, &addr_size); // this is the shit you would multithread
+		struct sockaddr peeraddr;
+		int addrlen = sizeof(struct sockaddr);
+		char peerip[INET6_ADDRSTRLEN];
+
+		memset(&peeraddr, 0, addrlen);
+		newfd = accept(sockfd, (struct sockaddr*)&clientaddr, &addrsize); // this is the shit you would multithread
+		if (getpeername(newfd, &peeraddr, &addrlen) == -1) { // figure out why this is failing
+			int errsv = errno;
+			fprintf(stderr, "getpeername() failed, errno %d\n", errsv);
+		}
+		// inet_ntop(peeraddr.sa_family, peeraddr.sa_data, peerip, INET6_ADDRSTRLEN); // figure out a nice way of error handling this function because this function is really stupid
+		if (inet_ntop(peeraddr.sa_family, peeraddr.sa_data, peerip, INET6_ADDRSTRLEN) == NULL) {
+			int errsv = errno;
+			fprintf(stderr, "inet_ntop() failed, errno %d\n", errsv);
+		}
+		fprintf(stderr, "new connection from %s\n", peerip);
+
+
 		// char* msg = "Hello there, General Kenobi\n";
 		char* msg = "Halló þarna, Kenöbi hershöfðingi\n";
 		int len, bytesSent;
