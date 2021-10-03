@@ -27,6 +27,8 @@ int main() {
 	int sockfd, newfd;
 	int status;
 	const int trueFlag = 1;
+	size_t hostnameSize = 100;
+	char* hostname = malloc(hostnameSize);
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for either one
@@ -62,7 +64,12 @@ int main() {
 		exit(1);
 	}
 	
+	if (gethostname(hostname, hostnameSize) == -1) {
+		int errsv = errno;
+		fprintf(stderr, "gethostname() failed, errno %d\n", errsv);
+	}
 	fprintf(stderr, "Server up and running\n"); // maybe add gethostname() here
+	fprintf(stderr, "Hostname: %s\n", hostname);
 
 	addrsize = sizeof(clientaddr);
 	while (1) { // swap this out for a proper connection pool manager (and preferrably something multithreaded)
