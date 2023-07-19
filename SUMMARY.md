@@ -12,3 +12,7 @@
   * [NETGEAR](infra-setup/switch-setup/netgear.md)
 * [Installing docker](infra-setup/installing-docker/README.md)
   * [Linux](infra-setup/installing-docker/linux.md)
+
+## Human setup
+
+* [jajadingdong](human-setup/jajadingdong.md)
